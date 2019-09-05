@@ -1,7 +1,9 @@
 # import bs4.BeautifulSoup as bs
 import os
 from bs4 import BeautifulSoup as Bs
-from urllib3 import request
+import urllib
+import requests
+
 
 #file_name = countries.html
 def get_all_country(file_name):
@@ -18,7 +20,7 @@ def get_all_country(file_name):
                 result.append((image.attrs["src"], rus_name, bin_code))
         return result
     else:
-        raise ValueError(f"File '{file_name}' not found!")
+        raise ValueError("File '{0}' not found!".format(file_name))
 
 def get_flags(file_name):
     if os.path.isfile(file_name):
@@ -32,29 +34,30 @@ def get_flags(file_name):
                 result.append(image)
         return result
     else:
-        raise ValueError(f"File '{file_name}' not found!")
+        raise ValueError("File '{0}' not found!".format(file_name))
 
 def get_flags_from_site():
-
-    html = Bs(request("http://actravel.ru/country_codes.html").text)
-    table = html.find_all("tr")[0]
-    lines = table("tr")
+    flags = []
+    result = requests.get("http://actravel.ru/country_codes.html").text
+    html = Bs(result, features="html.parser")
+    table = html.find_all("table")[0]
+    lines = table.find_all("tr")[1:]
     for line in lines:
         rows = line.find_all("td")
         image = rows[0].find("img").attrs["src"][8:]
-        result.append(image)
-    return result
+        flags.append(image)
+    print(flags)
+    return flags
 
 
 def save_images():
     url_templ = "http://actravel.ru/images/"
     flags = get_flags_from_site()
     for flag in flags:
-        with open(flag, "w") as f:
-            #print(url_templ+flag)
-            #url = url_templ+flag
-            request.urlretrieve(url_templ+flag, flag)
-            #f.write(result)
+        img = requests.get(url_templ + flag)
+        with open(flag, "wb") as f:
+            f.write(img.content)
+
 
 def get_sql_country(data):
     pass
