@@ -24,7 +24,7 @@ def get_flags(file_name):
     if os.path.isfile(file_name):
         result = []
         with open(file_name, "r") as html_file:
-            html = Bs(html_file.read())#, features="html.parser")
+            html = Bs(html_file.read(), features="html.parser")
             lines = html.find_all("tr")
             for line in lines:
                 rows = line.find_all("td")
@@ -34,21 +34,9 @@ def get_flags(file_name):
     else:
         raise ValueError(f"File '{file_name}' not found!")
 
-def get_flags_from_site():
-
-    html = Bs(request("http://actravel.ru/country_codes.html").text)
-    table = html.find_all("tr")[0]
-    lines = table("tr")
-    for line in lines:
-        rows = line.find_all("td")
-        image = rows[0].find("img").attrs["src"][8:]
-        result.append(image)
-    return result
-
-
 def save_images():
     url_templ = "http://actravel.ru/images/"
-    flags = get_flags_from_site()
+    flags = get_flags("countries.html")
     for flag in flags:
         with open(flag, "w") as f:
             #print(url_templ+flag)
